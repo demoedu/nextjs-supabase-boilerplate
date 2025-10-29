@@ -1,25 +1,19 @@
 .
 ├── app
-│   ├── (auth)
-│   │   └── sign-in
+│   ├── api
+│   │   └── sync-user
+│   ├── auth-test
+│   │   └── page.tsx
 │   ├── favicon.ico
 │   ├── globals.css
 │   ├── layout.tsx
-│   ├── my-cookbook
-│   │   └── page.tsx
 │   ├── page.tsx
-│   ├── recipes
-│   │   ├── [id]
-│   │   ├── new
-│   │   └── page.tsx
-│   └── subscription
+│   └── storage-test
 │       └── page.tsx
 ├── components
-│   ├── CommentCard.tsx
-│   ├── CommentForm.tsx
 │   ├── Navbar.tsx
-│   ├── RecipeCard.tsx
-│   ├── RecipeForm.tsx
+│   ├── providers
+│   │   └── sync-user-provider.tsx
 │   └── ui
 │       ├── accordion.tsx
 │       ├── button.tsx
@@ -30,10 +24,15 @@
 │       └── textarea.tsx
 ├── components.json
 ├── eslint.config.mjs
+├── hooks
+│   └── use-sync-user.ts
 ├── lib
 │   ├── actions
-│   │   ├── comment.actions.ts
-│   │   └── recipe.actions.ts
+│   ├── supabase
+│   │   ├── clerk-client.ts
+│   │   ├── client.ts
+│   │   ├── server.ts
+│   │   └── service-role.ts
 │   ├── supabase.ts
 │   └── utils.ts
 ├── middleware.ts
@@ -47,7 +46,28 @@
 │   ├── 20251029_232122.md
 │   ├── 20251029_232304.md
 │   ├── 20251029_232448.md
-│   └── 20251029_233030.md
+│   ├── 20251029_233030.md
+│   ├── 20251029_233525.md
+│   ├── 20251029_233849.md
+│   ├── 20251030_002918.md
+│   ├── 20251030_003047.md
+│   ├── 20251030_010134.md
+│   ├── 20251030_010557.md
+│   ├── 20251030_011439.md
+│   ├── 20251030_012256.md
+│   ├── 20251030_012319.md
+│   ├── 20251030_012542.md
+│   ├── 20251030_012854.md
+│   ├── 20251030_013057.md
+│   ├── 20251030_014049.md
+│   ├── 20251030_014240.md
+│   ├── 20251030_014326.md
+│   ├── 20251030_014543.md
+│   ├── 20251030_014739.md
+│   ├── 20251030_014834.md
+│   ├── 20251030_015224.md
+│   ├── 20251030_015535.md
+│   └── 20251030_015713.md
 ├── public
 │   ├── icons
 │   │   ├── icon-192x192.png
@@ -57,9 +77,11 @@
 │   ├── logo.png
 │   └── og-image.png
 ├── README.md
-├── supabase_schema.sql
+├── supabase
+│   ├── config.toml
+│   └── migrations
+│       └── schema.sql
 ├── tsconfig.json
 └── types
-    └── index.d.ts
 
-17 directories, 46 files
+19 directories, 66 files

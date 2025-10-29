@@ -1,0 +1,25 @@
+- [ ] `.cursor/` 디렉토리
+  - [ ] `rules/` 커서룰
+  - [ ] `mcp.json` MCP 서버 설정
+  - [ ] `dir.md` 프로젝트 디렉토리 구조
+- [ ] `.github/` 디렉토리
+- [ ] `.husky/` 디렉토리
+- [ ] `app/` 디렉토리
+  - [ ] `favicon.ico` 파일
+  - [ ] `not-found.tsx` 파일
+  - [ ] `robots.ts` 파일
+  - [ ] `sitemap.ts` 파일
+  - [ ] `manifest.ts` 파일
+- [ ] `supabase/` 디렉토리
+- [ ] `public/` 디렉토리
+  - [ ] `icons/` 디렉토리
+  - [ ] `logo.png` 파일
+  - [ ] `og-image.png` 파일
+- [ ] `tsconfig.json` 파일
+- [ ] `.cursorignore` 파일
+- [ ] `.gitignore` 파일
+- [ ] `.prettierignore` 파일
+- [ ] `.prettierrc` 파일
+- [ ] `tsconfig.json` 파일
+- [ ] `eslint.config.mjs` 파일
+- [ ] `AGENTS.md` 파일

@@ -1,0 +1,237 @@
+---
+description: This rule defines unified conventions and best practices for building scalable, maintainable, and consistent fullstack applications with Next.js, covering file naming, directory structure, component architecture, and technology stack guidelines based on React 19 and Next.js 15.
+globs: **/*.js,**/*.jsx,**/*.ts,**/*.tsx
+alwaysApply: false
+---
+# NextJS Convention
+
+## Package Manager
+
+pnpm을 사용합니다.
+만약 pnpm 에러가 난다면 `npm install -g pnpm` 명령어로 pnpm을 설치합니다.
+
+## File Name Convention
+
+- 모든 파일명은 `kebab-case` 로 작성합니다.
+- `not-found.tsx`, `mdx-components.tsx` 처럼, 최대한 간결하게 하되, 단어 사이는 하이픈으로 연결합니다.
+
+## Function/Variable Convention
+
+- `camelCase` 로 작성합니다.
+- TypeScript 타입은 반드시 정의해야 합니다.
+
+## Component Convention
+
+- Component 명은 `PascalCase` 로 작성합니다. (Component 파일명도 예외없이 `kebab-case`로 작성합니다)
+- Component는 재사용 가능하도록 설계해야 합니다.
+
+## Directory Convention
+
+`app` 외부에 프로젝트 파일 저장하는 방법을 사용합니다.
+
+### src/app
+
+- 라우팅 용으로 사용한다. (라우팅과 관련된 파일만 넣어놓는다)
+- e.g. `page.tsx`, `layout.tsx`, `opengraph-image.tsx`
+
+### src/actions
+
+- 무조건 API 대신 Server Action을 사용한다. 불가피한 경우에만 API를 사용한다.
+- NextJS Server Action 파일들을 넣어놓는다.
+
+### src/components
+
+- 여러 페이지에서 공통으로 사용할 컴포넌트
+- Button, Loading...
+
+### src/constants
+
+- 공통으로 사용 할 상수
+
+### src/hooks
+
+- 페이지 곳곳에서 사용되는 공통 훅
+
+### src/utils
+
+- 공통으로 사용되는 유틸 함수
+- e.g. supabase/client.ts, supabase/server.ts ...
+
+### src/states
+
+- props drilling을 막기 위한 전역 state를 모아둔다.
+- 전역 상태관리는 최대한 남발하지 않으며 jotai를 사용한다.
+
+### src/types
+
+- 각종 타입 스크립트의 정의가 들어가는 곳
+
+### tests
+
+- 테스트 파일을 모아두는 곳
+
+## Package Convention
+
+### Vitest
+
+```sh
+pnpm install -D vitest @vitejs/plugin-react jsdom @testing-library/react @testing-library/dom vite-tsconfig-paths
+```
+
+`vitest.config.mts`
+```json
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+import tsconfigPaths from 'vite-tsconfig-paths'
+
+export default defineConfig({
+  plugins: [tsconfigPaths(), react()],
+  test: {
+    environment: 'jsdom',
+  },
+})
+```
+
+`package.json`
+```json
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest" // 추가
+  }
+}
+```
+
+테스트 예시: `__tests__/page.test.tsx`
+```tsx
+import { expect, test } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import Page from '../app/page'
+
+test('Page', () => {
+  render(<Page />)
+  expect(screen.getByRole('heading', { level: 1, name: 'Home' })).toBeDefined()
+})
+```
+
+### TailwindCSS
+
+- 모든 스타일은 TailwindCSS를 사용해야 합니다.
+- TailwindCSS v4 버전을 사용합니다.
+  - 그러므로 `tailwind.config.js`, `tailwind.config.ts` 파일은 사용하지 않고 `globals.css` 파일만을 사용합니다.
+
+### ShadCN Component
+
+- 모든 UI 컴포넌트는 ShadCN을 사용해야 합니다.
+- 컴포넌트 사용 전 설치 여부를 확인해야 합니다: `/component/ui` 디렉토리 체크
+- 컴포넌트 설치 명령어를 사용해야 합니다: `pnpx shadcn@latest add [component-name]`
+
+### lucide-react
+
+- 모든 아이콘은 lucide-react를 사용해야 합니다.
+- 아이콘 임포트 방법: `import { IconName } from 'lucide-react';`
+- 예시: `import { Menu, X } from 'lucide-react';`
+
+### Jotai
+
+- 전역 상태관리는 Jotai를 사용해야 합니다.
+
+### React Query
+
+- 데이터 패칭은 React Query를 사용해야 합니다.
+
+### Supabase
+
+- 데이터베이스는 Supabase를 사용해야 하며 `@supabase/supabase-js`를 사용해야 합니다.
+- 사용자 인증은 Supabase Auth를 사용해야 하며 `@supabase/ssr`를 사용해야 합니다.
+- 클라이언트 파일은 `utils/supabase` 폴더에 넣어야 합니다.
+
+## Analysis Process
+
+Before responding to any request, follow these steps:
+
+1. Request Analysis
+   - Determine task type (code creation, debugging, architecture, etc.)
+   - Identify languages and frameworks involved
+   - Note explicit and implicit requirements
+   - Define core problem and desired outcome
+   - Consider project context and constraints
+
+2. Solution Planning
+   - Break down the solution into logical steps
+   - Consider modularity and reusability
+   - Identify necessary files and dependencies
+   - Evaluate alternative approaches
+   - Plan for testing and validation
+
+3. Implementation Strategy
+   - Choose appropriate design patterns
+   - Consider performance implications
+   - Plan for error handling and edge cases
+   - Ensure accessibility compliance
+   - Verify best practices alignment
+
+## Feature Implementation Workflow
+
+기능을 구현할 때는 **반드시** 다음의 조건과 단계를 따릅니다:
+1.  **계획 수립 및 검토:**
+   - 요구사항 분석을 바탕으로 구체적인 구현 계획을 세웁니다.
+   - 수립된 계획을 사용자에게 제시하고, 진행 전에 반드시 검토와 승인을 받습니다.
+2.  **단계적 구현 및 검증:**
+   - 기능 구현 과정을 논리적인 작은 단위로 세분화하여 단계적으로 진행합니다.
+   - 각 단계의 핵심 로직에는 서버 및 클라이언트 환경 모두에 로그(예: `console.group`, `console.log`)를 추가합니다.
+       - 로그는 기능의 정상 작동 여부를 확인하고, 잠재적인 문제를 조기에 발견하여 디버깅하는 데 활용됩니다.
+       - 구현이 완료되고 안정화된 후에는 디버깅 목적의 로그는 제거하거나, 필요한 경우 최소한으로 유지하는 것을 고려합니다.
+   - 각 단계 구현 후에는 충분한 테스트와 검증을 통해 의도한 대로 작동하는지 확인합니다.
+
+## Code Style and Structure
+
+### General Principles
+
+- Write concise, readable TypeScript code
+- Use functional and declarative programming patterns
+- Follow DRY (Don't Repeat Yourself) principle
+- Implement early returns for better readability
+- Structure components logically: exports, subcomponents, helpers, types
+
+### Naming Conventions
+
+- Use descriptive names with auxiliary verbs (isLoading, hasError)
+- Prefix event handlers with "handle" (handleClick, handleSubmit)
+- Use lowercase with dashes for directories (components/auth-wizard)
+- Favor named exports for components
+
+### TypeScript Usage
+
+- Use TypeScript for all code
+- Prefer interfaces over types
+- Avoid enums; use const maps instead
+- Implement proper type safety and inference
+- Use `satisfies` operator for type validation
+
+## React 19 and Next.js 15 Best Practices
+
+### Component Architecture
+
+- Favor React Server Components (RSC) where possible
+- Minimize 'use client' directives
+- Implement proper error boundaries
+- Use Suspense for async operations
+- Optimize for performance and Web Vitals
+
+### Async Request APIs
+
+```typescript
+// Always use async versions of runtime APIs
+const cookieStore = await cookies()
+const headersList = await headers()
+const { isEnabled } = await draftMode()
+
+// Handle async params in layouts/pages
+const params = await props.params
+const searchParams = await props.searchParams
+```
+
+<!-- https://github.com/PatrickJS/awesome-cursorrules/blob/main/rules/nextjs15-react19-vercelai-tailwind-cursorrules-prompt-file/.cursorrules -->

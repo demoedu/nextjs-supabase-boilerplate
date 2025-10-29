@@ -1,0 +1,140 @@
+---
+description: Guidelines for disabling RLS in development environment
+alwaysApply: true
+---
+
+# Database: Disable RLS for Development
+
+이 템플릿은 비개발자도 쉽게 사용할 수 있도록 설계되었습니다. RLS(Row Level Security)는 프로덕션 환경에서는 중요하지만, 개발 초기 단계에서는 권한 설정으로 인한 에러가 자주 발생하여 개발 경험을 저해할 수 있습니다.
+
+## 기본 원칙
+
+**Supabase에 적용할 SQL문을 작성하거나 Supabase MCP를 통해 데이터베이스를 조작할 때는 항상 RLS를 비활성화하세요.**
+
+## RLS 비활성화 방법
+
+### 1. 새 테이블 생성 시
+
+테이블을 생성할 때 RLS를 활성화하지 않습니다:
+
+```sql
+-- 테이블 생성
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT NOT NULL,
+  name TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- RLS는 활성화하지 않음 (ALTER TABLE ... ENABLE ROW LEVEL SECURITY 구문 사용 안 함)
+```
+
+### 2. 기존 테이블의 RLS 비활성화
+
+이미 RLS가 활성화된 테이블의 경우:
+
+```sql
+-- 단일 테이블 RLS 비활성화
+ALTER TABLE users DISABLE ROW LEVEL SECURITY;
+
+-- 여러 테이블 RLS 비활성화
+ALTER TABLE users DISABLE ROW LEVEL SECURITY;
+ALTER TABLE posts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE comments DISABLE ROW LEVEL SECURITY;
+```
+
+### 3. 모든 테이블의 RLS 한 번에 비활성화
+
+스키마 내 모든 테이블의 RLS를 비활성화:
+
+```sql
+DO $$
+DECLARE
+  r RECORD;
+BEGIN
+  FOR r IN (
+    SELECT tablename
+    FROM pg_tables
+    WHERE schemaname = 'public'
+  ) LOOP
+    EXECUTE 'ALTER TABLE public.' || quote_ident(r.tablename) || ' DISABLE ROW LEVEL SECURITY';
+  END LOOP;
+END $$;
+```
+
+### 4. RLS 상태 확인
+
+현재 RLS가 활성화된 테이블 확인:
+
+```sql
+SELECT
+  schemaname,
+  tablename,
+  rowsecurity
+FROM pg_tables
+WHERE schemaname = 'public'
+ORDER BY tablename;
+```
+
+## 마이그레이션 파일 작성 시
+
+마이그레이션 파일을 작성할 때도 RLS 관련 구문을 포함하지 마세요:
+
+```sql
+-- ✅ 권장: RLS 없이 테이블만 생성
+CREATE TABLE products (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ❌ 비권장: RLS 활성화 및 정책 생성
+-- ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY ... ON products ...
+```
+
+## Supabase MCP 사용 시
+
+Supabase MCP를 통해 데이터베이스를 조작할 때도 동일한 원칙을 적용합니다:
+
+1. 테이블 생성 시 RLS를 활성화하지 않음
+2. 데이터 접근 시 권한 관련 에러가 발생하면 즉시 RLS 비활성화
+3. 정책(Policy)을 생성하지 않음
+
+## 주의사항
+
+### 개발 환경 전용
+
+이 설정은 **개발 환경 전용**입니다. 프로덕션 환경에 배포하기 전에는 적절한 RLS 정책을 검토하고 적용해야 합니다.
+
+### 프로덕션 전환 시
+
+프로덕션으로 전환할 때는:
+
+1. 각 테이블에 대한 접근 권한 검토
+2. 필요한 RLS 정책 작성
+3. RLS 활성화
+4. 충분한 테스트 수행
+
+### 임시 테스트용 정책
+
+개발 중 테스트가 필요한 경우, 모든 접근을 허용하는 임시 정책을 사용할 수 있습니다:
+
+```sql
+-- 개발 중 임시 사용 (프로덕션에서는 절대 사용 금지)
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow all access for development" ON users
+FOR ALL
+TO public
+USING (true)
+WITH CHECK (true);
+```
+
+## 요약
+
+- **기본 원칙**: 개발 초기에는 RLS를 비활성화하여 권한 에러 방지
+- **새 테이블**: RLS 활성화 구문을 포함하지 않음
+- **기존 테이블**: `ALTER TABLE ... DISABLE ROW LEVEL SECURITY` 사용
+- **프로덕션**: 배포 전 반드시 적절한 RLS 정책 검토 및 적용

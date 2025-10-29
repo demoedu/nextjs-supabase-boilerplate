@@ -18,6 +18,7 @@ import { useState } from "react";
 import { Textarea } from "./ui/textarea";
 import { createRecipe } from "@/lib/actions/recipe.actions";
 import { useRouter } from "next/navigation";
+import { Recipe } from "@/types";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -45,7 +46,7 @@ const RecipeForm = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const recipe = await createRecipe(values);
+    const recipe = await createRecipe(values as Omit<Recipe, 'id'>);
 
     router.push(`/recipes/${recipe.id}`);
   };

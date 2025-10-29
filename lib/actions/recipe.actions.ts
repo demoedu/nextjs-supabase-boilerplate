@@ -84,7 +84,7 @@ export const getRecipe = async (id: string) => {
 };
 
 // Create a new recipe
-export const createRecipe = async (recipe: Recipe) => {
+export const createRecipe = async (recipe: Omit<Recipe, 'id'>) => {
   const { userId } = await auth();
 
   if (!userId) throw new Error("Unauthorized");

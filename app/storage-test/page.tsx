@@ -12,7 +12,18 @@ import {
   LuTriangleAlert,
 } from "react-icons/lu";
 import Link from "next/link";
-import type { FileObject } from "@supabase/supabase-js";
+
+// Supabase Storage FileObject 타입 정의
+interface FileObject {
+  id: string;
+  name: string;
+  bucket_id: string;
+  owner?: string;
+  created_at: string;
+  updated_at: string;
+  last_accessed_at: string;
+  metadata?: Record<string, any>;
+}
 
 const STORAGE_BUCKET = process.env.NEXT_PUBLIC_STORAGE_BUCKET || "uploads";
 

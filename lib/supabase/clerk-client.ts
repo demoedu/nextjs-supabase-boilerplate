@@ -38,15 +38,8 @@ export function useClerkSupabaseClient() {
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
     return createClient(supabaseUrl, supabaseKey, {
-      global: {
-        headers: async () => {
-          const token = await getToken();
-          return token
-            ? {
-                Authorization: `Bearer ${token}`,
-              }
-            : {};
-        },
+      async accessToken() {
+        return (await getToken()) ?? null;
       },
     });
   }, [getToken]);

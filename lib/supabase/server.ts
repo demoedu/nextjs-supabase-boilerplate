@@ -8,21 +8,26 @@ import { auth } from "@clerk/nextjs/server";
  * - JWT 템플릿 불필요
  * - Clerk 토큰을 Supabase가 자동 검증
  * - auth().getToken()으로 현재 세션 토큰 사용
+ *
+ * @example
+ * ```tsx
+ * // Server Component
+ * import { createClerkSupabaseClient } from '@/lib/supabase/server';
+ *
+ * export default async function MyPage() {
+ *   const supabase = createClerkSupabaseClient();
+ *   const { data } = await supabase.from('table').select('*');
+ *   return <div>...</div>;
+ * }
+ * ```
  */
-export async function createClerkSupabaseClient() {
+export function createClerkSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-  // Clerk 인증 토큰 가져오기
-  const token = await auth().getToken();
-
   return createClient(supabaseUrl, supabaseKey, {
-    global: {
-      headers: token
-        ? {
-            Authorization: `Bearer ${token}`,
-          }
-        : {},
+    async accessToken() {
+      return (await auth()).getToken();
     },
   });
 }

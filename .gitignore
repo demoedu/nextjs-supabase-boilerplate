@@ -55,7 +55,7 @@ next-env.d.ts
 *.log
 
 # other
-.cursor/mcp.json
+# .cursor/mcp.json
 prompts/
 
 # clerk configuration (can include secrets)

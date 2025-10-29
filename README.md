@@ -24,7 +24,7 @@
 2. [기술 스택](#기술-스택)
 3. [주요 기능](#주요-기능)
 4. [시작하기](#시작하기)
-5. [환경 설정](#환경-설정)
+5. [추가 설정 및 팁](#추가-설정-및-팁)
 6. [프로젝트 구조](#프로젝트-구조)
 
 ## 소개
@@ -106,90 +106,185 @@ Next.js 15, Clerk, Supabase를 활용한 모던 SaaS 애플리케이션 템플�
 - [Git](https://git-scm.com/)
 - [Node.js](https://nodejs.org/en) (v18 이상)
 - [pnpm](https://pnpm.io/) (권장 패키지 매니저)
-- [Supabase CLI](https://supabase.com/docs/guides/cli) (선택사항, 로컬 개발용)
 
 ```bash
 # pnpm 설치
 npm install -g pnpm
-
-# Supabase CLI 설치 (선택사항)
-npm install -g supabase
 ```
 
-### 1. 저장소 클론
+### 프로젝트 초기화
+
+다음 단계를 순서대로 진행하세요:
+
+#### 1. Supabase 프로젝트 생성
+
+1. [Supabase Dashboard](https://supabase.com/dashboard)에 접속하여 로그인
+2. **"New Project"** 클릭
+3. Organization 선택 (없으면 새로 생성)
+4. 프로젝트 정보 입력:
+   - **Name**: 원하는 프로젝트 이름
+   - **Database Password**: 안전한 비밀번호 생성 (기억할 필요 없음, Supabase가 관리)
+   - **Region**: `Northeast Asia (Seoul)` 선택 (한국 서비스용)
+   - **Pricing Plan**: Free 또는 Pro 선택
+5. **"Create new project"** 클릭하고 프로젝트가 준비될 때까지 대기 (~2분)
+
+#### 2. Clerk 프로젝트 생성
+
+1. [Clerk Dashboard](https://dashboard.clerk.com/)에 접속하여 로그인
+2. **"Create application"** 클릭
+3. 애플리케이션 정보 입력:
+   - **Application name**: 원하는 이름 (예: `SaaS Template`)
+   - **Sign-in options**: Email, Google 등 원하는 인증 방식 선택
+4. **"Create application"** 클릭
+5. Quick Start 화면에서 **"Continue in Dashboard"** 클릭
+
+#### 3. Clerk + Supabase 통합
+
+> **중요**: 2025년 4월부터 Clerk의 네이티브 Supabase 통합을 사용합니다. JWT Template은 더 이상 필요하지 않습니다.
+
+**3-1. Clerk Frontend API URL 확인**
+
+1. Clerk Dashboard → **API Keys** 메뉴
+2. **"Frontend API"** URL 복사 (예: `https://your-app-12.clerk.accounts.dev`)
+   - 이 URL을 메모해두세요 (다음 단계에서 사용)
+
+**3-2. Supabase에서 Clerk 인증 제공자 설정**
+
+1. Supabase Dashboard로 돌아가기
+2. 프로젝트 선택 → **Settings** → **Authentication** → **Providers**
+3. 페이지 하단으로 스크롤하여 **"Third-Party Auth"** 섹션 찾기
+4. **"Enable Custom Access Token"** 또는 **"Add Provider"** 클릭
+5. 다음 정보 입력:
+
+   - **Provider Name**: `Clerk` (또는 원하는 이름)
+   - **JWT Issuer (Issuer URL)**:
+     ```
+     https://your-app-12.clerk.accounts.dev
+     ```
+     (`your-app-12` 부분을 실제 Clerk Frontend API URL로 교체)
+
+   - **JWKS Endpoint (JWKS URI)**:
+     ```
+     https://your-app-12.clerk.accounts.dev/.well-known/jwks.json
+     ```
+     (동일하게 실제 URL로 교체)
+
+6. **"Save"** 또는 **"Add Provider"** 클릭
+
+**3-3. 통합 확인**
+
+[Clerk 공식 통합 가이드](https://clerk.com/docs/guides/development/integrations/databases/supabase)에서 추가 정보를 확인할 수 있습니다.
+
+#### 4. Supabase Storage 생성 및 설정
+
+1. Supabase Dashboard → **Storage** 메뉴
+2. **"New bucket"** 클릭
+3. 버킷 정보 입력:
+   - **Name**: `uploads` (`.env.example`과 동일하게)
+   - **Public bucket**: 필요에 따라 선택
+     - Public: 누구나 URL로 파일 접근 가능
+     - Private: 인증된 사용자만 접근 (RLS 정책 필요)
+4. **"Create bucket"** 클릭
+
+#### 5. 데이터베이스 스키마 적용
+
+1. Supabase Dashboard → **SQL Editor** 메뉴
+2. **"New query"** 클릭
+3. `supabase/migrations/schema.sql` 파일 내용을 복사하여 붙여넣기
+4. **"Run"** 클릭하여 실행
+5. 성공 메시지 확인 (`Success. No rows returned`)
+
+**생성되는 테이블:**
+- `users`: Clerk 사용자와 동기화되는 사용자 정보 테이블
+
+#### 6. 환경 변수 설정
+
+**6-1. 저장소 클론 및 의존성 설치**
 
 ```bash
 git clone <your-repository-url>
 cd saas-template
-```
-
-### 2. 의존성 설치
-
-```bash
 pnpm install
 ```
 
-### 3. 환경 변수 설정
-
-`.env.example` 파일을 복사하여 `.env` 파일을 생성합니다:
+**6-2. .env 파일 생성**
 
 ```bash
 cp .env.example .env
 ```
 
-`.env` 파일을 열어 다음 값들을 설정합니다. 자세한 설정 방법은 [환경 설정](#환경-설정) 섹션을 참고하세요.
+**6-3. Supabase 환경 변수 설정**
 
-```env
-# Clerk
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
-CLERK_SECRET_KEY=your_clerk_secret_key
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
-NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
+1. Supabase Dashboard → **Settings** → **API**
+2. 다음 값들을 복사하여 `.env` 파일에 입력:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL="<Project URL>"
+   NEXT_PUBLIC_SUPABASE_ANON_KEY="<anon public key>"
+   SUPABASE_SERVICE_ROLE_KEY="<service_role secret key>"
+   NEXT_PUBLIC_STORAGE_BUCKET="uploads"
+   ```
 
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-NEXT_PUBLIC_STORAGE_BUCKET=uploads
+> **⚠️ 주의**: `service_role` 키는 모든 RLS를 우회하는 관리자 권한이므로 절대 공개하지 마세요!
+
+**6-4. Clerk 환경 변수 설정**
+
+1. Clerk Dashboard → **API Keys**
+2. 다음 값들을 복사하여 `.env` 파일에 입력:
+   ```env
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="<Publishable Key>"
+   CLERK_SECRET_KEY="<Secret Key>"
+   NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
+   NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL="/"
+   NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL="/"
+   ```
+
+#### 7. Cursor MCP 설정 (선택사항)
+
+> Cursor AI를 사용하는 경우, Supabase MCP 서버를 설정하면 AI가 데이터베이스를 직접 조회하고 관리할 수 있습니다.
+
+**7-1. Supabase Access Token 생성**
+
+1. Supabase Dashboard → 우측 상단 프로필 아이콘 클릭
+2. **Account Settings** → **Access Tokens**
+3. **"Generate new token"** 클릭
+4. Token name 입력 (예: `cursor-mcp`)
+5. 생성된 토큰 복사 (다시 볼 수 없으므로 안전한 곳에 보관)
+
+**7-2. .cursor/mcp.json 설정**
+
+`.cursor/mcp.json` 파일을 열고 `your_supabase_access_token` 부분을 실제 토큰으로 교체:
+
+```json
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--access-token",
+        "sbp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      ]
+    }
+  }
+}
 ```
 
-### 4. 데이터베이스 마이그레이션
+**7-3. Cursor 재시작**
 
-Supabase 프로젝트에 데이터베이스 스키마를 적용합니다:
+Cursor를 완전히 종료하고 다시 실행하여 MCP 서버 설정을 적용합니다.
 
-**옵션 A: Supabase 대시보드 사용**
-1. [Supabase Dashboard](https://supabase.com/dashboard) 접속
-2. 프로젝트 선택 → SQL Editor
-3. `supabase/migrations/schema.sql` 내용을 복사하여 실행
-
-**옵션 B: Supabase CLI 사용 (권장)**
-```bash
-# Supabase 프로젝트 링크
-supabase link --project-ref your-project-ref
-
-# 마이그레이션 적용
-supabase db push
-```
-
-### 5. Clerk 설정
-
-1. [Clerk Dashboard](https://dashboard.clerk.com/) 접속
-2. 새 애플리케이션 생성
-3. **User & Authentication** → **Email, Phone, Username** 설정
-4. **SSO Connections** → Google 등 원하는 소셜 로그인 활성화
-5. **JWT Templates** → Supabase 템플릿 추가:
-   - Template name: `supabase`
-   - Claims: 기본값 사용
-6. API Keys 복사하여 `.env`에 추가
-
-### 6. 개발 서버 실행
+#### 8. 개발 서버 실행
 
 ```bash
 pnpm dev
 ```
 
 브라우저에서 [http://localhost:3000](http://localhost:3000)을 열어 확인합니다.
+
+**테스트 페이지:**
+- `/auth-test`: Clerk + Supabase 인증 통합 테스트
+- `/storage-test`: Supabase Storage 업로드 테스트
 
 ### 개발 명령어
 
@@ -207,73 +302,52 @@ pnpm start
 pnpm lint
 ```
 
-## 환경 설정
+## 추가 설정 및 팁
 
-### Clerk 설정 상세
+### Clerk 한국어 설정
 
-1. **Clerk 애플리케이션 생성**
-   - [Clerk Dashboard](https://dashboard.clerk.com/) 접속
-   - "Create application" 클릭
-   - 애플리케이션 이름 입력
-   - 원하는 로그인 방식 선택 (Email, Google 등)
+프로젝트에 이미 Clerk 한국어 로컬라이제이션이 적용되어 있습니다. `app/layout.tsx`의 `ClerkProvider`에서 `koKR` locale이 설정되어 있습니다.
 
-2. **API Keys 복사**
-   - Dashboard → **API Keys** 메뉴
-   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` 복사
-   - `CLERK_SECRET_KEY` 복사 (절대 공개하지 말 것!)
-   - **Frontend API** URL 확인 (예: `https://your-app.clerk.accounts.dev`)
-     - 이 URL은 다음 단계에서 Supabase 설정에 필요합니다
+### Supabase RLS (Row Level Security) 정책
 
-3. **한국어 설정 (선택사항)**
-   - 프로젝트에서 이미 `koKR` localization 적용됨
-   - `app/layout.tsx`에서 확인 가능
+프로젝트의 `users` 테이블에는 기본 RLS 정책이 설정되어 있습니다:
 
-> **⚠️ 중요:** JWT Template 생성은 **불필요**합니다. 이전 방식(JWT Template)은 보안상 권장되지 않으며, 이 프로젝트는 Clerk 토큰을 직접 사용하는 최신 방식을 채택하고 있습니다.
+- **SELECT**: 사용자는 자신의 데이터만 조회 가능
+- **INSERT**: 새 사용자 생성 가능
+- **UPDATE**: 사용자는 자신의 데이터만 수정 가능
 
-### Supabase 설정 상세
+추가 테이블 생성 시 RLS 정책을 반드시 설정하세요:
 
-1. **Supabase 프로젝트 생성**
-   - [Supabase Dashboard](https://supabase.com/dashboard) 접속
-   - "New Project" 클릭
-   - Organization 선택 (또는 새로 생성)
-   - 프로젝트 이름, 데이터베이스 비밀번호, 리전 선택
-   - "Create new project" 클릭
+```sql
+-- 테이블 생성
+CREATE TABLE your_table (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id TEXT NOT NULL REFERENCES users(clerk_id),
+  -- 기타 컬럼들
+);
 
-2. **API Keys 및 URL 복사**
-   - Project Settings → **API** 메뉴
-   - `Project URL` → `NEXT_PUBLIC_SUPABASE_URL`
-   - `anon public` → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `service_role` → `SUPABASE_SERVICE_ROLE_KEY` (절대 공개하지 말 것!)
+-- RLS 활성화
+ALTER TABLE your_table ENABLE ROW LEVEL SECURITY;
 
-3. **Clerk Third-Party 인증 연동 (필수!)**
+-- SELECT 정책
+CREATE POLICY "Users can view their own data"
+  ON your_table FOR SELECT
+  USING (auth.jwt()->>'sub' = user_id);
 
-   이 단계는 Supabase가 Clerk 토큰을 검증하도록 설정합니다.
+-- INSERT 정책
+CREATE POLICY "Users can insert their own data"
+  ON your_table FOR INSERT
+  WITH CHECK (auth.jwt()->>'sub' = user_id);
+```
 
-   - Project Settings → **Authentication** → **Providers**
-   - 페이지 하단으로 스크롤하여 **"Third-Party Auth"** 또는 **"Custom"** 섹션 찾기
-   - "Enable Custom Access Token" 또는 유사한 옵션 활성화
-   - 다음 정보 입력:
+### 추가 로그인 방식 설정
 
-     **JWT Issuer (Issuer URL):**
-     ```
-     https://your-clerk-domain.clerk.accounts.dev
-     ```
+Clerk에서 추가 로그인 방식을 활성화하려면:
 
-     **JWKS Endpoint (JWKS URI):**
-     ```
-     https://your-clerk-domain.clerk.accounts.dev/.well-known/jwks.json
-     ```
-
-     > `your-clerk-domain` 부분을 Clerk Dashboard의 **API Keys** 페이지에서 확인한 "Frontend API" URL의 도메인으로 교체하세요.
-     >
-     > 예: Frontend API가 `https://moving-swan-12.clerk.accounts.dev`인 경우
-     > - Issuer: `https://moving-swan-12.clerk.accounts.dev`
-     > - JWKS: `https://moving-swan-12.clerk.accounts.dev/.well-known/jwks.json`
-
-4. **스토리지 버킷 생성 (선택사항)**
-   - Storage 메뉴에서 "New bucket" 클릭
-   - Bucket name: `uploads` (`.env`의 `NEXT_PUBLIC_STORAGE_BUCKET`과 동일하게)
-   - Public/Private 선택
+1. Clerk Dashboard → **User & Authentication** → **Social Connections**
+2. 원하는 제공자 선택 (Google, GitHub, Discord 등)
+3. OAuth 자격 증명 입력 (제공자 개발자 콘솔에서 생성)
+4. **Enable** 클릭
 
 ## 프로젝트 구조
 

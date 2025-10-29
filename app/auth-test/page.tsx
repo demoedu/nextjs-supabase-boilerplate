@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ export default function AuthTestPage() {
   const [newName, setNewName] = useState("");
 
   // Supabase 연결 테스트
-  const testConnection = async () => {
+  const testConnection = useCallback(async () => {
     try {
       setConnectionStatus("testing");
       setError(null);
@@ -44,10 +44,10 @@ export default function AuthTestPage() {
       setError(err instanceof Error ? err.message : "연결 테스트 실패");
       console.error("Connection test error:", err);
     }
-  };
+  }, [supabase]);
 
   // 사용자 데이터 가져오기 또는 생성
-  const fetchOrCreateUser = async () => {
+  const fetchOrCreateUser = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -95,7 +95,7 @@ export default function AuthTestPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, supabase]);
 
   // 이름 업데이트
   const updateName = async () => {
@@ -127,7 +127,7 @@ export default function AuthTestPage() {
       testConnection();
       fetchOrCreateUser();
     }
-  }, [user, isLoaded]);
+  }, [user, isLoaded, testConnection, fetchOrCreateUser]);
 
   if (!isLoaded) {
     return (

@@ -45,9 +45,14 @@ pnpm lint
 2. **Supabase 클라이언트 파일들** (`lib/supabase/`):
 
    - `clerk-client.ts`: Client Component용 (useClerkSupabaseClient hook)
+     - Clerk 세션 토큰으로 인증된 사용자의 데이터 접근
+     - RLS 정책이 `auth.jwt()->>'sub'`로 Clerk user ID 확인
    - `server.ts`: Server Component/Server Action용 (createClerkSupabaseClient)
+     - 서버 사이드에서 Clerk 인증 사용
    - `service-role.ts`: 관리자 권한 작업용 (SUPABASE_SERVICE_ROLE_KEY 사용)
+     - RLS 우회, 서버 사이드 전용
    - `client.ts`: 인증 불필요한 공개 데이터용
+     - anon key만 사용, RLS 정책이 `to anon`인 데이터만 접근
 
 3. **사용자 동기화**:
    - `hooks/use-sync-user.ts`: Clerk → Supabase 사용자 동기화 훅
@@ -105,11 +110,25 @@ supabase/migrations/20241030014800_create_users_table.sql
 
 ### 현재 스키마
 
+#### 데이터베이스 테이블
+
 - `users`: Clerk 사용자와 동기화되는 사용자 정보
   - `id`: UUID (Primary Key)
   - `clerk_id`: TEXT (Unique, Clerk User ID)
   - `name`: TEXT
   - `created_at`: TIMESTAMP
+  - RLS: 개발 중 비활성화 (프로덕션에서는 활성화 필요)
+
+#### Storage 버킷
+
+- `uploads`: 사용자 파일 저장소
+  - 경로 구조: `{clerk_user_id}/{filename}`
+  - RLS 정책:
+    - INSERT: 인증된 사용자만 자신의 폴더에 업로드 가능
+    - SELECT: 인증된 사용자만 자신의 파일 조회 가능
+    - DELETE: 인증된 사용자만 자신의 파일 삭제 가능
+    - UPDATE: 인증된 사용자만 자신의 파일 업데이트 가능
+  - 정책은 `auth.jwt()->>'sub'` (Clerk user ID)로 사용자 확인
 
 ## Environment Variables
 

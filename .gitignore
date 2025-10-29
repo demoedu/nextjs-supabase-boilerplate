@@ -55,8 +55,10 @@ next-env.d.ts
 *.log
 
 # other
-# .cursor/mcp.json
+.cursor/mcp.json
+.mcp.json
 prompts/
+repomix-output.xml
 
 # clerk configuration (can include secrets)
 /.clerk/

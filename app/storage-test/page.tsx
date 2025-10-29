@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
-import { supabase } from "@/lib/supabase/client";
+import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
 import { Button } from "@/components/ui/button";
 import {
   LuUpload,
@@ -29,13 +29,14 @@ const STORAGE_BUCKET = process.env.NEXT_PUBLIC_STORAGE_BUCKET || "uploads";
 
 export default function StorageTestPage() {
   const { user, isLoaded } = useUser();
+  const supabase = useClerkSupabaseClient();
   const [files, setFiles] = useState<FileObject[]>([]);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // 파일 목록 가져오기
-  const fetchFiles = async () => {
+  const fetchFiles = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -62,13 +63,13 @@ export default function StorageTestPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, supabase]);
 
   useEffect(() => {
     if (isLoaded && user) {
       fetchFiles();
     }
-  }, [user, isLoaded]);
+  }, [user, isLoaded, fetchFiles]);
 
   // 파일 업로드
   const uploadFile = async (event: React.ChangeEvent<HTMLInputElement>) => {

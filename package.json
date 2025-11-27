@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "gen:types": "npx supabase gen types typescript --project-id \"PROJECT_REF\" --schema public > database.types.ts"
   },
   "dependencies": {
     "@clerk/backend": "^1.33.1",

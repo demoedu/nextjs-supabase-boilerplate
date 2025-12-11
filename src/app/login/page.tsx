@@ -1,8 +1,18 @@
+import Link from "next/link";
+import { signInWithPassword, signUp, signInWithMagicLink } from "./actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-  signInWithPassword,
-  signUp,
-  signInWithMagicLink,
-} from "./actions";
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { LuCircleAlert, LuCircleCheck } from "react-icons/lu";
 
 export default async function LoginPage({
   searchParams,
@@ -13,54 +23,85 @@ export default async function LoginPage({
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-sm space-y-6">
-        <h1 className="text-2xl font-bold text-center">Login</h1>
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">
+            Welcome back
+          </CardTitle>
+          <CardDescription className="text-center">
+            Enter your email to sign in to your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <LuCircleAlert className="size-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          {message && (
+            <Alert>
+              <LuCircleCheck className="size-4" />
+              <AlertDescription>{message}</AlertDescription>
+            </Alert>
+          )}
 
-        {error && (
-          <p className="text-red-500 text-sm text-center">{error}</p>
-        )}
-        {message && (
-          <p className="text-green-500 text-sm text-center">{message}</p>
-        )}
+          <form className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="m@example.com"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+              />
+            </div>
 
-        <form className="space-y-4">
-          <input
-            name="email"
-            type="email"
-            placeholder="Email"
-            required
-            className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
-          />
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            className="w-full px-3 py-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
-          />
+            <div className="flex gap-2">
+              <Button formAction={signInWithPassword} className="flex-1">
+                Sign In
+              </Button>
+              <Button formAction={signUp} variant="outline" className="flex-1">
+                Sign Up
+              </Button>
+            </div>
 
-          <div className="flex gap-2">
-            <button
-              formAction={signInWithPassword}
-              className="flex-1 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or</span>
+              </div>
+            </div>
+
+            <Button
+              formAction={signInWithMagicLink}
+              variant="secondary"
+              className="w-full"
             >
-              Login
-            </button>
-            <button
-              formAction={signUp}
-              className="flex-1 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900"
-            >
-              Sign Up
-            </button>
-          </div>
-
-          <button
-            formAction={signInWithMagicLink}
-            className="w-full py-2 border rounded-md hover:bg-gray-50 dark:hover:bg-gray-800"
-          >
-            Magic Link
-          </button>
-        </form>
-      </div>
+              Sign in with Magic Link
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <p className="text-sm text-muted-foreground">
+            <Link href="/" className="hover:text-primary underline-offset-4 hover:underline">
+              Back to home
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

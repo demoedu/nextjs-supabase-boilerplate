@@ -74,39 +74,6 @@ export async function verifyEmailOtp(formData: FormData) {
   redirect("/");
 }
 
-// 휴대폰 OTP 전송
-export async function signInWithPhone(formData: FormData) {
-  const supabase = await createClient();
-
-  const { error } = await supabase.auth.signInWithOtp({
-    phone: formData.get("phone") as string,
-  });
-
-  if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
-  }
-
-  redirect("/login?step=verify-phone");
-}
-
-// 휴대폰 OTP 인증
-export async function verifyPhoneOtp(formData: FormData) {
-  const supabase = await createClient();
-
-  const { error } = await supabase.auth.verifyOtp({
-    phone: formData.get("phone") as string,
-    token: formData.get("token") as string,
-    type: "sms",
-  });
-
-  if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
-  }
-
-  revalidatePath("/", "layout");
-  redirect("/");
-}
-
 // 로그아웃
 export async function signOut() {
   const supabase = await createClient();
